@@ -11,7 +11,11 @@ import {
   Text,
   View
 } from 'react-native';
+import App from './App/App.js';
 
+AppRegistry.registerComponent('PolySleep', () => App);
+
+/*
 export default class PolySleep extends Component {
   render() {
     return (
@@ -51,3 +55,4 @@ const styles = StyleSheet.create({
 });
 
 AppRegistry.registerComponent('PolySleep', () => PolySleep);
+*/
