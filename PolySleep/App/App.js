@@ -8,13 +8,18 @@ import { Provider } from 'react-redux';
 import { connect } from 'react-redux';
 import store from './store/store.js';
 import CounterContainer from './containers/CounterContainer.js';
+import Alarm from './components/Alarm.js';
 
 export default class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <View style={styles.container}>
+        {/*<View style={styles.container}>
           <CounterContainer/>
+        </View>
+        */}
+        <View>
+         <Alarm />
         </View>
       </Provider>
     );
