@@ -3,9 +3,11 @@ import {
   Button,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   Slider,
 } from 'react-native';
+import DateTimePicker from 'react-native-modal-datetime-picker';
 
 export default class Alarm extends Component {
   static defaultProps = {
@@ -25,23 +27,77 @@ export default class Alarm extends Component {
 
   state = {
     startCore: this.props.startCore,
+    startCoreText: '',
     endCore: this.props.endCore,
+    endCoreText: '',
     startNap: this.props.startNap,
+    startNapText: '',
     endNap: this.props.endNap,
+    endNapText: '',
+    isDateTimePickerVisible: false,
   };
+
+  _showDateTimePicker = () => this.setState({ isDateTimePickerVisible: true });
+  
+  _hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
+
+  _handleDatePicked = (date) => {
+    console.log('A date has been picked: ', date);
+    this.setState({ 
+      startCoreText : this.convertDateToTimeText(date),
+    });
+    this._hideDateTimePicker();
+    this.updateSchedule(this.convertDateToNumber(date));
+  };
+
+  convertDateToNumber(date) {
+    let timeAsNumber = date.getHours();
+    timeAsNumber = timeAsNumber + date.getMinutes()/60;
+    console.log(timeAsNumber);
+    return timeAsNumber;
+  }
+
+  convertNumberToTimeText(number) {
+    console.log('convert number to time text');
+    console.log(number);
+    let numberSplit = number.toString().split('.');
+    let timeText = numberSplit[0];
+    console.log(numberSplit);
+    if(numberSplit.length > 1)
+    {
+      let minutes = parseFloat('.' + numberSplit[1]);
+      minutes = minutes * 60;
+      timeText = timeText + ':' + minutes.toString().substring(0,2);
+    }
+    else{
+      timeText = timeText + ':00';
+    }
+    return timeText;
+  }
+
+  convertDateToTimeText(date) {
+    return date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+  }
 
   updateSchedule(value) {
 
     let tempEndCore = value+this.props.core;
+    tempEndCore = tempEndCore > 24 ? tempEndCore%24 : tempEndCore;
     let tempStartNap = value+this.props.core+this.props.wake1;
+    tempStartNap = tempStartNap > 24 ? tempStartNap%24 : tempStartNap;
     let tempEndNap = value + this.props.core + this.props.wake1 + this.props.nap;
+    tempEndNap = tempEndNap > 24 ? tempEndNap%24 : tempEndNap;
 
     this.setState({
       startCore: value,
-      endCore: (tempEndCore > 24 ? tempEndCore%24 : tempEndCore),
-      startNap: (tempStartNap > 24 ? tempStartNap%24 : tempStartNap),
-      endNap: (tempEndNap > 24 ? tempEndNap%24 : tempEndNap),
+      endCore: (tempEndCore),
+      endCoreText: this.convertNumberToTimeText(tempEndCore),
+      startNap: (tempStartNap),
+      startNapText: this.convertNumberToTimeText(tempStartNap),
+      endNap: (tempEndNap),
+      endNapText: this.convertNumberToTimeText(tempEndNap),
     });
+    console.log(this.state);
   }
 
   render() {
@@ -49,18 +105,18 @@ export default class Alarm extends Component {
       <View>
         <Text style={styles.text} >
           {`SIESTA SCHEDULE\n\nCore Begin Time: `}
-          {this.state.startCore && +this.state.startCore.toFixed(3)}
+          {this.state.startCoreText } {/*&&/*+this.state.startCore.toFixed(3)}*/}
           {"\nCore End Time:"}
-          {this.state.endCore &&
-            this.state.endCore
+          {this.state.endCoreText &&
+            this.state.endCoreText
           }
           {"\nNap Start Time:"}
-          {this.state.startNap &&
-            this.state.startNap
+          {this.state.startNapText &&
+            this.state.startNapText
           }
           {"\nNap End Time:"}
-          {this.state.endNap &&
-            this.state.endNap
+          {this.state.endNapText &&
+            this.state.endNapText
           }
           {"\nTotal Sleep Time:"}
           {this.props.totalSleep}
@@ -73,6 +129,17 @@ export default class Alarm extends Component {
           maximumValue={24}
           step={this.props.increments}
           onValueChange={(value) => this.updateSchedule(value)} />
+          <TouchableOpacity onPress={this._showDateTimePicker}>
+            <Text>Set Begin Time</Text>
+          </TouchableOpacity>
+          <DateTimePicker
+            isVisible={this.state.isDateTimePickerVisible}
+            onConfirm={this._handleDatePicked}
+            onCancel={this._hideDateTimePicker}
+            mode={'time'}
+            //date={new Date(this.state.startCoreText)}
+            minuteInterval={15}
+          />
       </View>
     );
   }
