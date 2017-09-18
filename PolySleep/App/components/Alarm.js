@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   View,
   Slider,
+  Picker,
 } from 'react-native';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import PushNotification from 'react-native-push-notification';
+import _ from 'lodash';
 
 export default class Alarm extends Component {
   static defaultProps = {
@@ -201,8 +203,9 @@ export default class Alarm extends Component {
         <Picker
           selectedValue={this.state.selectedSchedule}
           onValueChange={(itemValue, itemIndex) => this.setState({selectedSchedule: itemValue})}>
-          {
-            this.props.schedules.
+          {this.props.schedules.map( (schedule, index) => {
+              return <Picker.Item key={index} label={schedule.label} value={schedule.label} />
+            })
           }
         </Picker>
         <Text style={styles.text} >
