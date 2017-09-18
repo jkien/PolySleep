@@ -28,6 +28,7 @@ export default class Alarm extends Component {
 
   state = {
     startCore: this.props.startCore,
+    startCoreDate: {},
     startCoreText: '',
     endCore: this.props.endCore,
     endCoreText: '',
@@ -45,6 +46,7 @@ export default class Alarm extends Component {
   _handleDatePicked = (date) => {
     console.log('A date has been picked: ', date);
     this.setState({ 
+      startCoreDate : date,
       startCoreText : this.convertDateToTimeText(date),
     });
     this._hideDateTimePicker();
@@ -81,10 +83,11 @@ export default class Alarm extends Component {
   }
 
   scheduleNotfication() { 
-    console.log('note sched2');
+    console.log('note sched');
     PushNotification.localNotificationSchedule({
       message: "My Notification Message", // (required)
-      date: new Date(Date.now() + (60 * 1000)) // in 60 secs
+      //date: new Date(Date.now() + (60 * 1000)) // in 60 secs
+      date: this.state.startCoreDate
     });
    }  
 
@@ -133,15 +136,17 @@ export default class Alarm extends Component {
           {"\nTotal Wake Time:"}
           {this.props.totalWake}
         </Text>
-        <Slider
+          {/*
+          <Slider
           {...this.props}
           minimumValue={0}
           maximumValue={24}
           step={this.props.increments}
           onValueChange={(value) => this.updateSchedule(value)} />
-          <TouchableOpacity onPress={this._showDateTimePicker}>
-            <Text>Set Begin Time</Text>
-          </TouchableOpacity>
+          */}
+          <Button title="Set Core Sleep Time" onPress={this._showDateTimePicker}>
+            <Text>Set Core Sleep Time Text</Text>
+          </Button>
           <DateTimePicker
             isVisible={this.state.isDateTimePickerVisible}
             onConfirm={this._handleDatePicked}
@@ -150,7 +155,7 @@ export default class Alarm extends Component {
             //date={new Date(this.state.startCoreText)}
             minuteInterval={15}
           />
-          <Button title="title of button" onPress={ this.scheduleNotfication.bind(this) } > 
+          <Button title="Set schedule" onPress={ this.scheduleNotfication.bind(this) } > 
             <Text>show</Text> 
           </Button>
       </View>
