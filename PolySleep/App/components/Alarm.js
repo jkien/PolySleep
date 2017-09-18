@@ -17,13 +17,40 @@ export default class Alarm extends Component {
     core: 5,
     wake1: 9,
     wake2: 8.5,
-    minPerHour: 60,
     nap: 1.5,
     startNap: 18,
     endNap: 19.5,
     totalSleep: 6.5,
     totalWake: 17.5,
+    minPerHour: 60,
     increments: .25,
+    totalInDay: 24,
+    schedules : 
+    {
+      monophasic : {
+        core: 8,
+        wake: 16,
+        //nap: 0,
+        totalSleep: 8,
+        totalWake: 16,
+      },
+      segmented : {
+        core: 3.5,
+        wake: 2,
+        nap: 3.5,
+        wake2: 15,
+        totalSleep: 7,
+        totalWake: 17,
+      },
+      siesta : {
+        core: 5,
+        wake: 7,
+        nap: 1.5,
+        wake2: 10.5,
+        totalSleep: 6.5,
+        totalWake: 17.5,
+      },
+    },
   };
 
   state = {
@@ -31,10 +58,13 @@ export default class Alarm extends Component {
     startCoreDate: {},
     startCoreText: '',
     endCore: this.props.endCore,
+    endCoreDate: {},
     endCoreText: '',
     startNap: this.props.startNap,
+    startNapDate: {},
     startNapText: '',
     endNap: this.props.endNap,
+    endNapDate: {},
     endNapText: '',
     isDateTimePickerVisible: false,
   };
@@ -45,12 +75,14 @@ export default class Alarm extends Component {
 
   _handleDatePicked = (date) => {
     console.log('A date has been picked: ', date);
-    this.setState({ 
-      startCoreDate : date,
-      startCoreText : this.convertDateToTimeText(date),
-    });
+    //if the date chosen is in the past, add 1 day to set notification for next occurrence 
+    if(date < Date.now())
+    {
+      // add a day
+      date.setDate(date.getDate() + 1);
+    }
     this._hideDateTimePicker();
-    this.updateSchedule(this.convertDateToNumber(date));
+    this.updateSchedule(date);
   };
 
   convertDateToNumber(date) {
@@ -85,13 +117,54 @@ export default class Alarm extends Component {
   scheduleNotfication() { 
     console.log('note sched');
     PushNotification.localNotificationSchedule({
-      message: "My Notification Message", // (required)
+      message: "Time for Core Sleep", // (required)
       //date: new Date(Date.now() + (60 * 1000)) // in 60 secs
-      date: this.state.startCoreDate
+      date: this.state.startCoreDate,
+      repeatType: 'day',
+    });
+    PushNotification.localNotificationSchedule({
+      message: "Wake up from Core Sleep", // (required)
+      date: this.state.endCoreDate,
+      repeatType: 'day',
+    });
+    PushNotification.localNotificationSchedule({
+      message: "Time for Nap", // (required)
+      date: this.state.startNapDate,
+      repeatType: 'day',
+    });
+    PushNotification.localNotificationSchedule({
+      message: "Wake up from Nap", // (required)
+      date: this.state.endNapDate,
+      repeatType: 'day',
     });
    }  
 
-  updateSchedule(value) {
+  addTimeToDate(date, time)
+  {
+    let hours, mins;
+    //time in format of 1.5
+    if(time % 1 !== 0)
+    {
+      //there is a decimal, get that for the minutes
+      let minsTime = time % 1;
+      //convert to minutes
+      mins = minsTime * 60;
+      mins = Math.round(mins);
+      hours = Math.floor(time);
+    }
+    else
+    {
+      hours = time; 
+      mins = 0;
+    }
+    let newDate = new Date();
+    newDate.setHours(date.getHours() + hours);
+    newDate.setMinutes(date.getMinutes() + mins);
+    return newDate;
+  }
+
+  updateSchedule(date) {
+    let value = this.convertDateToNumber(date);
 
     let tempEndCore = value+this.props.core;
     tempEndCore = tempEndCore > 24 ? tempEndCore%24 : tempEndCore;
@@ -102,11 +175,16 @@ export default class Alarm extends Component {
 
     this.setState({
       startCore: value,
+      startCoreDate : date,
+      startCoreText : this.convertDateToTimeText(date),
       endCore: (tempEndCore),
+      endCoreDate: this.addTimeToDate(date, this.props.core),
       endCoreText: this.convertNumberToTimeText(tempEndCore),
       startNap: (tempStartNap),
+      startNapDate: this.addTimeToDate(date, this.props.core + this.props.wake1),
       startNapText: this.convertNumberToTimeText(tempStartNap),
       endNap: (tempEndNap),
+      endNapDate: this.addTimeToDate(date, this.props.core + this.props.wake1 + this.props.nap),
       endNapText: this.convertNumberToTimeText(tempEndNap),
     });
     console.log(this.state);
@@ -144,7 +222,7 @@ export default class Alarm extends Component {
           step={this.props.increments}
           onValueChange={(value) => this.updateSchedule(value)} />
           */}
-          <Button title="Set Core Sleep Time" onPress={this._showDateTimePicker}>
+          <Button title="Set Core Sleep Time" onPress={this._showDateTimePicker} style={styles.button}>
             <Text>Set Core Sleep Time Text</Text>
           </Button>
           <DateTimePicker
@@ -155,7 +233,7 @@ export default class Alarm extends Component {
             //date={new Date(this.state.startCoreText)}
             minuteInterval={15}
           />
-          <Button title="Set schedule" onPress={ this.scheduleNotfication.bind(this) } > 
+          <Button title="Update Schedule" onPress={ this.scheduleNotfication.bind(this) } style={styles.button}> 
             <Text>show</Text> 
           </Button>
       </View>
@@ -169,5 +247,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontSize: 26,
     fontWeight: 'bold',
+  },
+  button: {
+    margin: 10,
   },
 });
