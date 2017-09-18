@@ -26,15 +26,17 @@ export default class Alarm extends Component {
     increments: .25,
     totalInDay: 24,
     schedules : 
-    {
-      monophasic : {
+    [
+      {
+        label: 'monophasic',
         core: 8,
         wake: 16,
         //nap: 0,
         totalSleep: 8,
         totalWake: 16,
       },
-      segmented : {
+      {
+        label: 'segmented',
         core: 3.5,
         wake: 2,
         nap: 3.5,
@@ -42,7 +44,8 @@ export default class Alarm extends Component {
         totalSleep: 7,
         totalWake: 17,
       },
-      siesta : {
+      {
+        label: 'siesta',
         core: 5,
         wake: 7,
         nap: 1.5,
@@ -50,7 +53,7 @@ export default class Alarm extends Component {
         totalSleep: 6.5,
         totalWake: 17.5,
       },
-    },
+    ],
   };
 
   state = {
@@ -67,6 +70,7 @@ export default class Alarm extends Component {
     endNapDate: {},
     endNapText: '',
     isDateTimePickerVisible: false,
+    selectedSchedule: 'monophasic',
   };
 
   _showDateTimePicker = () => this.setState({ isDateTimePickerVisible: true });
@@ -194,6 +198,13 @@ export default class Alarm extends Component {
   render() {
     return (
       <View>
+        <Picker
+          selectedValue={this.state.selectedSchedule}
+          onValueChange={(itemValue, itemIndex) => this.setState({selectedSchedule: itemValue})}>
+          {
+            this.props.schedules.
+          }
+        </Picker>
         <Text style={styles.text} >
           {`SIESTA SCHEDULE\n\nCore Begin Time: `}
           {this.state.startCoreText } {/*&&/*+this.state.startCore.toFixed(3)}*/}
