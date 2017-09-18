@@ -8,6 +8,7 @@ import {
   Slider,
 } from 'react-native';
 import DateTimePicker from 'react-native-modal-datetime-picker';
+import PushNotification from 'react-native-push-notification';
 
 export default class Alarm extends Component {
   static defaultProps = {
@@ -79,6 +80,14 @@ export default class Alarm extends Component {
     return date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
   }
 
+  scheduleNotfication() { 
+    console.log('note sched2');
+    PushNotification.localNotificationSchedule({
+      message: "My Notification Message", // (required)
+      date: new Date(Date.now() + (60 * 1000)) // in 60 secs
+    });
+   }  
+
   updateSchedule(value) {
 
     let tempEndCore = value+this.props.core;
@@ -98,6 +107,7 @@ export default class Alarm extends Component {
       endNapText: this.convertNumberToTimeText(tempEndNap),
     });
     console.log(this.state);
+    //this.scheduleNotfication();
   }
 
   render() {
@@ -140,6 +150,9 @@ export default class Alarm extends Component {
             //date={new Date(this.state.startCoreText)}
             minuteInterval={15}
           />
+          <Button title="title of button" onPress={ this.scheduleNotfication.bind(this) } > 
+            <Text>show</Text> 
+          </Button>
       </View>
     );
   }
